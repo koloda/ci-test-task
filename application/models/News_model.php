@@ -1,5 +1,7 @@
 <?php
 
+include('traits/Likeable.php');
+
 /**
  * Created by PhpStorm.
  * User: mr.incognito
@@ -8,8 +10,10 @@
  */
 class News_model extends MY_Model
 {
+    use Likeable;
+
     const NEWS_TABLE = 'news';
-    const PAGE_LIMIT = 5;
+    const PAGE_LIMIT = 3;
 
     protected $id;
     protected $header;
@@ -23,7 +27,8 @@ class News_model extends MY_Model
     protected $views;
 
     protected $comments;
-    protected $likes;
+
+    protected $likes_class = 'News_likes_model';
 
     function __construct($id = FALSE)
     {
@@ -144,18 +149,16 @@ class News_model extends MY_Model
     }
 
     /**
-     * @return News_like_model
-     */
-    public function get_likes()
-    {
-        return $this->likes;
-    }
-
-    /**
      * @return News_comments_model[]
      */
     public function get_comments()
     {
+        if (!$this->comments) {
+            $CI = &get_instance();
+            $CI->load->model('news_comments_model');
+            $this->comments = News_comments_model::get_by_news_id($this->id);
+        }
+
         return $this->comments;
     }
 
@@ -208,21 +211,21 @@ class News_model extends MY_Model
             $_info->description = $item->get_short_description();
             $_info->img = $item->get_image();
             $_info->time = $item->get_time_updated();
+            $_info->comments = $item->get_comments();
             $res[] = $_info;
         }
         return $res;
     }
-    
-    
-    public static function create($data){
 
+
+    public static function create($data)
+    {
         $CI =& get_instance();
-	    $res = $CI->s->from(self::NEWS_TABLE)->insert($_insert_data)->execute();
+	    $res = $CI->s->from(self::NEWS_TABLE)->insert($data)->execute();
 	    if(!$res){
 	        return FALSE;
         }
+
 	    return new self($CI->s->insert_id);
     }
-    
-
 }
