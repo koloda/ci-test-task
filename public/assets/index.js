@@ -5,8 +5,8 @@ import './less/style.less';
 import Vue from 'vue/dist/vue.esm.js';
 
 import LikeButton from './components/LikeButton';
-import Comment from './components/Comment';
 import Post from './components/Post';
+import PostComments from './components/PostComments';
 
 new Vue ({
     el: '#post',
@@ -15,8 +15,8 @@ new Vue ({
     },
     components: {
         'like-button': LikeButton,
-        'comment': Comment,
-        'post': Post
+        'post': Post,
+        'post-comments': PostComments
     }
 });
 

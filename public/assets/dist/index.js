@@ -115412,10 +115412,10 @@ var vue_1 = __importDefault(require("vue"));
 var LikeButton_vue_1 = __importDefault(require("./LikeButton.vue"));
 
 exports.default = vue_1.default.extend({
-  props: ['created', 'likes', 'text', 'comment_id', 'liked'],
+  props: ['comment'],
   data: function data() {
     return {
-      likesCount: this.likes
+      likesCount: this.comment.likes
     };
   },
   components: {
@@ -115460,7 +115460,9 @@ exports.default = vue_1.default.extend({
             },
             [
               _c("li", [
-                _c("a", { attrs: { href: "#" } }, [_vm._v(_vm._s(_vm.created))])
+                _c("a", { attrs: { href: "#" } }, [
+                  _vm._v(_vm._s(_vm.comment.created_at))
+                ])
               ]),
               _vm._v(" "),
               _c("li", [_vm._v("Likes: " + _vm._s(_vm.likesCount))]),
@@ -115471,8 +115473,8 @@ exports.default = vue_1.default.extend({
                   [
                     _c("like-button", {
                       attrs: {
-                        entity_id: _vm.comment_id,
-                        liked: _vm.liked,
+                        entity_id: _vm.comment.id,
+                        liked: _vm.comment.likedByCurrUser,
                         entity: "comment",
                         resource: "/comments",
                         hint_position: "after"
@@ -115490,7 +115492,7 @@ exports.default = vue_1.default.extend({
     ),
     _vm._v(" "),
     _c("div", { staticClass: "uk-comment-body" }, [
-      _c("p", [_vm._v(_vm._s(_vm.text))])
+      _c("p", [_vm._t("default")], 2)
     ])
   ])
 }
@@ -115550,7 +115552,94 @@ render._withStripped = true
         
       }
     })();
-},{"vue":"../../node_modules/vue/dist/vue.runtime.esm.js","./LikeButton.vue":"components/LikeButton.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js"}],"components/Post.vue":[function(require,module,exports) {
+},{"vue":"../../node_modules/vue/dist/vue.runtime.esm.js","./LikeButton.vue":"components/LikeButton.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js"}],"components/PostComments.vue":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _Comment = _interopRequireDefault(require("./Comment.vue"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+//
+//
+//
+//
+//
+//
+//
+//
+var _default = {
+  props: ['comments'],
+  data: function data() {
+    return {
+      commentsList: this.comments
+    };
+  },
+  components: {
+    comment: _Comment.default
+  }
+};
+exports.default = _default;
+        var $82c762 = exports.default || module.exports;
+      
+      if (typeof $82c762 === 'function') {
+        $82c762 = $82c762.options;
+      }
+    
+        /* template */
+        Object.assign($82c762, (function () {
+          var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { staticClass: "comments-list" },
+    _vm._l(_vm.commentsList, function(c) {
+      return _c(
+        "div",
+        { key: c.id, staticClass: "comment" },
+        [_c("comment", { attrs: { comment: c } }, [_vm._v(_vm._s(c.text))])],
+        1
+      )
+    }),
+    0
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+          return {
+            render: render,
+            staticRenderFns: staticRenderFns,
+            _compiled: true,
+            _scopeId: null,
+            functional: undefined
+          };
+        })());
+      
+    /* hot reload */
+    (function () {
+      if (module.hot) {
+        var api = require('vue-hot-reload-api');
+        api.install(require('vue'));
+        if (api.compatible) {
+          module.hot.accept();
+          if (!module.hot.data) {
+            api.createRecord('$82c762', $82c762);
+          } else {
+            api.reload('$82c762', $82c762);
+          }
+        }
+
+        
+      }
+    })();
+},{"./Comment.vue":"components/Comment.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js","vue":"../../node_modules/vue/dist/vue.runtime.esm.js"}],"components/Post.vue":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -115567,15 +115656,18 @@ var vue_1 = __importDefault(require("vue"));
 
 var LikeButton_vue_1 = __importDefault(require("./LikeButton.vue"));
 
+var PostComments_vue_1 = __importDefault(require("./PostComments.vue"));
+
 exports.default = vue_1.default.extend({
   data: function data() {
     return {
       likesCount: this.likes
     };
   },
-  props: ['header', 'published', 'post_id', 'liked', 'views', 'likes', 'comments', 'image'],
+  props: ['header', 'published', 'post_id', 'liked', 'views', 'likes', 'comments', 'image', 'commentsjson'],
   components: {
-    'like-button': LikeButton_vue_1.default
+    'like-button': LikeButton_vue_1.default,
+    'post-comments': PostComments_vue_1.default
   },
   methods: {
     likesChanged: function likesChanged(n) {
@@ -115595,61 +115687,74 @@ exports.default = vue_1.default.extend({
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "post-component" }, [
-    _c(
-      "div",
-      {
-        staticClass:
-          "uk-height-medium uk-flex uk-flex-center uk-flex-middle uk-background-cover uk-light",
-        attrs: { "data-src": _vm.image, "uk-img": "" }
-      },
-      [
-        _c("h1", { staticClass: "uk-text-center" }, [
-          _vm._v(_vm._s(_vm.header))
+  return _c(
+    "div",
+    { staticClass: "post-component" },
+    [
+      _c(
+        "div",
+        {
+          staticClass:
+            "uk-height-medium uk-flex uk-flex-center uk-flex-middle uk-background-cover uk-light",
+          attrs: { "data-src": _vm.image, "uk-img": "" }
+        },
+        [
+          _c("h1", { staticClass: "uk-text-center" }, [
+            _vm._v(_vm._s(_vm.header))
+          ])
+        ]
+      ),
+      _vm._v(" "),
+      _c("article", [
+        _c("small", [_vm._v("Published at: " + _vm._s(_vm.published))]),
+        _vm._v(" "),
+        _c("p", [_vm._t("default")], 2)
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "uk-text-right" },
+        [
+          _c("like-button", {
+            attrs: {
+              entity_id: _vm.post_id,
+              liked: _vm.liked,
+              entity: "post",
+              resource: "/news",
+              hint_position: "before"
+            },
+            on: { likeevent: _vm.likesChanged }
+          })
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c("hr"),
+      _vm._v(" "),
+      _c("div", { staticClass: "row" }, [
+        _c("div", { staticClass: "col-md" }, [
+          _vm._v("\n            Views: " + _vm._s(_vm.views) + "\n        ")
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "col-md" }, [
+          _vm._v(
+            "\n            Likes: " + _vm._s(_vm.likesCount) + "\n        "
+          )
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "col-md" }, [
+          _vm._v(
+            "\n            Comments: " + _vm._s(_vm.comments) + "\n        "
+          )
         ])
-      ]
-    ),
-    _vm._v(" "),
-    _c("article", [
-      _c("small", [_vm._v("Published at: " + _vm._s(_vm.published))]),
-      _vm._v(" "),
-      _c("p", [_vm._t("default")], 2)
-    ]),
-    _vm._v(" "),
-    _c(
-      "div",
-      { staticClass: "uk-text-right" },
-      [
-        _c("like-button", {
-          attrs: {
-            entity_id: _vm.post_id,
-            liked: _vm.liked,
-            entity: "post",
-            resource: "/news",
-            hint_position: "before"
-          },
-          on: { likeevent: _vm.likesChanged }
-        })
-      ],
-      1
-    ),
-    _vm._v(" "),
-    _c("hr"),
-    _vm._v(" "),
-    _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col-md" }, [
-        _vm._v("\n            Views: " + _vm._s(_vm.views) + "\n        ")
       ]),
       _vm._v(" "),
-      _c("div", { staticClass: "col-md" }, [
-        _vm._v("\n            Likes: " + _vm._s(_vm.likesCount) + "\n        ")
-      ]),
+      _c("hr"),
       _vm._v(" "),
-      _c("div", { staticClass: "col-md" }, [
-        _vm._v("\n            Comments: " + _vm._s(_vm.comments) + "\n        ")
-      ])
-    ])
-  ])
+      _c("post-comments", { attrs: { comments: _vm.commentsjson } })
+    ],
+    1
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -115680,7 +115785,7 @@ render._withStripped = true
         
       }
     })();
-},{"vue":"../../node_modules/vue/dist/vue.runtime.esm.js","./LikeButton.vue":"components/LikeButton.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js"}],"index.js":[function(require,module,exports) {
+},{"vue":"../../node_modules/vue/dist/vue.runtime.esm.js","./LikeButton.vue":"components/LikeButton.vue","./PostComments.vue":"components/PostComments.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 require("uikit");
@@ -115695,9 +115800,9 @@ var _vueEsm = _interopRequireDefault(require("vue/dist/vue.esm.js"));
 
 var _LikeButton = _interopRequireDefault(require("./components/LikeButton"));
 
-var _Comment = _interopRequireDefault(require("./components/Comment"));
-
 var _Post = _interopRequireDefault(require("./components/Post"));
+
+var _PostComments = _interopRequireDefault(require("./components/PostComments"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -115708,11 +115813,11 @@ new _vueEsm.default({
   },
   components: {
     'like-button': _LikeButton.default,
-    'comment': _Comment.default,
-    'post': _Post.default
+    'post': _Post.default,
+    'post-comments': _PostComments.default
   }
 });
-},{"uikit":"../../node_modules/uikit/dist/js/uikit.js","../../node_modules/uikit/dist/js/uikit-icons":"../../node_modules/uikit/dist/js/uikit-icons.js","./index.css":"index.css","./less/style.less":"less/style.less","vue/dist/vue.esm.js":"../../node_modules/vue/dist/vue.esm.js","./components/LikeButton":"components/LikeButton.vue","./components/Comment":"components/Comment.vue","./components/Post":"components/Post.vue"}],"../../../../../../usr/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"uikit":"../../node_modules/uikit/dist/js/uikit.js","../../node_modules/uikit/dist/js/uikit-icons":"../../node_modules/uikit/dist/js/uikit-icons.js","./index.css":"index.css","./less/style.less":"less/style.less","vue/dist/vue.esm.js":"../../node_modules/vue/dist/vue.esm.js","./components/LikeButton":"components/LikeButton.vue","./components/Post":"components/Post.vue","./components/PostComments":"components/PostComments.vue"}],"../../../../../../usr/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;

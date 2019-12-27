@@ -1,6 +1,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import LikeButton from './LikeButton.vue';
+import PostComments from './PostComments.vue';
 
 export default Vue.extend({
     data () {
@@ -8,9 +9,10 @@ export default Vue.extend({
             likesCount: this.likes
         }
     },
-    props: ['header', 'published', 'post_id', 'liked', 'views', 'likes', 'comments', 'image'],
+    props: ['header', 'published', 'post_id', 'liked', 'views', 'likes', 'comments', 'image', 'commentsjson'],
     components: {
-        'like-button': LikeButton
+        'like-button': LikeButton,
+        'post-comments': PostComments
     },
     methods: {
         likesChanged: function (n) {
@@ -59,5 +61,8 @@ export default Vue.extend({
                 Comments: {{ comments }}
             </div>
         </div>
+
+        <hr>
+    <post-comments :comments="commentsjson"></post-comments>
     </div>
 </template>

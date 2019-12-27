@@ -17,13 +17,16 @@ class Front extends MY_Controller
     {
         $this->load->model('news_model');
         $model = new News_model($news_id);
-        $model->set_views($model->get_views() + 1);
-        $user_id = md5($this->input->ip_address() .  $_SERVER['HTTP_USER_AGENT']);
 
         if (!$model) {
             show_404();
         }
 
-        return $this->render('front/view', compact('model', 'user_id'));
+        $model->set_views($model->get_views() + 1);
+        $user_id = md5($this->input->ip_address() .  $_SERVER['HTTP_USER_AGENT']);
+        $this->load->model('news_comments_model');
+        $comments_json = json_encode(News_comments_model::as_json($model->get_comments(), $user_id), true);
+
+        return $this->render('front/view', compact('model', 'user_id', 'comments_json'));
     }
 }

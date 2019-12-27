@@ -17,6 +17,9 @@ class News_comments_model extends MY_Model
     /** @var int */
     protected $created_at;
 
+    /** @var int */
+    protected $news_id;
+
     protected $likes_class = 'News_comments_likes_model';
 
     function __construct($id = FALSE)
@@ -43,6 +46,11 @@ class News_comments_model extends MY_Model
         return $this->created_at;
     }
 
+    public function get_news_id()
+    {
+        return $this->news_id;
+    }
+
     public function get_text(): ?string
     {
         return $this->text;
@@ -63,6 +71,28 @@ class News_comments_model extends MY_Model
             ->many();
 
         return $news;
+    }
+
+    public static function as_json($items, string $user_id = null): array
+    {
+        if (!is_array($items)) {
+            $items = [$items];
+        }
+
+        $result = [];
+        foreach ($items as $item) {
+            /** @var News_comments_model $item */
+            $result[] = [
+                'id'            => $item->get_id(),
+                'text'          => $item->get_text(),
+                'news_id'       => $item->get_news_id(),
+                'created_at'    => date('m D, Y', strtotime($item->get_created_at())),
+                'likes'         => $item->get_likes(),
+                'likedByCurrUser'   => $user_id ? $item->liked_by($user_id) : false,
+            ];
+        }
+
+        return $result;
     }
 
     public function like(string $user_id)

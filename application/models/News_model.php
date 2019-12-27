@@ -217,7 +217,7 @@ class News_model extends MY_Model
         return self::preparation($news_list, $preparation);
     }
 
-        /**
+    /**
      * @param int $page
      * @param bool|string $preparation
      * @return array

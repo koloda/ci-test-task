@@ -10,14 +10,14 @@
                 </h4>
                 <ul class="uk-comment-meta uk-subnav uk-subnav-divider uk-margin-remove-top">
                     <li>
-                        <a href="#">{{ created }}</a>
+                        <a href="#">{{ comment.created_at }}</a>
                     </li>
                     <li>Likes: {{ likesCount }}</li>
                     <li class="uk-text-right">
                         <div>
                             <like-button
-                                :entity_id="comment_id"
-                                :liked="liked"
+                                :entity_id="comment.id"
+                                :liked="comment.likedByCurrUser"
                                 entity="comment"
                                 resource="/comments"
                                 hint_position="after"
@@ -29,7 +29,9 @@
             </div>
         </header>
         <div class="uk-comment-body">
-            <p>{{ text }}</p>
+            <p>
+                <slot></slot>
+            </p>
         </div>
     </article>
 </template>
@@ -39,10 +41,10 @@
     import LikeButton from './LikeButton.vue';
 
     export default Vue.extend({
-        props: ['created', 'likes', 'text', 'comment_id', 'liked'],
+        props: ['comment'],
         data () {
             return {
-                likesCount: this.likes
+                likesCount: this.comment.likes
             }
         },
         components: {

@@ -2,6 +2,7 @@
 /**
  * @var News_model $model
  * @var int $user_id
+ * @var string $comments_json
  */
 ?>
 
@@ -15,18 +16,8 @@
         views="<?= $model->get_views() ?>"
         likes="<?= $model->get_likes() ?>"
         comments="<?= count($model->get_comments()) ?>"
+        :commentsjson="<?= str_replace('"', '\'', $comments_json) ?>"
     >
     <?= $model->get_full_text() ?>
     </post>
-    <hr>
-    <?php foreach ($model->get_comments() as $comment): ?>
-        <comment
-            text="<?= $comment->get_text() ?>"
-            likes="<?= $comment->get_likes() ?>"
-            created="<?= date('m D, Y', $comment->get_created_at()) ?>"
-            comment_id="<?= $comment->get_id() ?>"
-            liked="<?= (int) $comment->liked_by($user_id) ?>"
-        >
-        </comment>
-    <?php endforeach; ?>
 </div>
