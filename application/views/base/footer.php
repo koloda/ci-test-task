@@ -7,5 +7,6 @@
  */
 ?>
 
+<script type="text/javascript" src="/assets/dist/index.js"></script>
 </body>
 </html>

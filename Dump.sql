@@ -39,6 +39,8 @@ INSERT INTO `news_comments` (`news_id`, `text`) VALUES
 (5, 'the process and we kind of need to fill the blank spaces with something that will look like a regular text.'),
 (5, 'What, what is it hot?');
 
+ALTER TABLE `news` ADD COLUMN `views` int(9) DEFAULT 0;
+
 CREATE TABLE `likes` (
   `id` INT(16) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `entity` ENUM('news','comments') NOT NULL ,

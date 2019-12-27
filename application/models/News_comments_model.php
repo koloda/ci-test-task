@@ -1,6 +1,6 @@
 <?php
 
-include('traits/Likeable.php');
+require_once('traits/Likeable.php');
 
 class News_comments_model extends MY_Model
 {
@@ -36,6 +36,11 @@ class News_comments_model extends MY_Model
         }
 
 	    return new self($db->insert_id);
+    }
+
+    public function get_created_at()
+    {
+        return $this->created_at;
     }
 
     public function get_text(): ?string

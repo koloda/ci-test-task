@@ -36,4 +36,15 @@ trait Likeable
             ->delete()
             ->execute();
     }
+
+    public function liked_by(string $user_id)
+    {
+        $cls = $this->likes_class;
+        $CI = &get_instance();
+        $CI->load->model(strtolower($cls));
+
+        return $CI->s->from($cls::table())
+            ->where(['user_id' => (string) $user_id, $cls::entity_column() => $this->id])
+            ->count();
+    }
 }

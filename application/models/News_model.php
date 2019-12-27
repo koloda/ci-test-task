@@ -1,6 +1,6 @@
 <?php
 
-include('traits/Likeable.php');
+require_once('traits/Likeable.php');
 
 /**
  * Created by PhpStorm.
@@ -23,7 +23,6 @@ class News_model extends MY_Model
     protected $tags;
     protected $time_created;
     protected $time_updated;
-
     protected $views;
 
     protected $comments;
@@ -57,9 +56,19 @@ class News_model extends MY_Model
     /**
      * @return string
      */
-    public function get_short_description()
+    public function get_short_description(bool $strip_tags = false, int $length = null)
     {
-        return $this->short_description;
+        $sd = $this->short_description;
+
+        if ($strip_tags) {
+            $sd = strip_tags($sd);
+        }
+
+        if ($length && mb_strlen($sd) > 300) {
+            $sd = substr($sd, 0, 300) . '...';
+        }
+
+        return $sd;
     }
 
     /**
@@ -149,6 +158,23 @@ class News_model extends MY_Model
     }
 
     /**
+     * @return integer
+     */
+    public function get_views(): int
+    {
+        return (int) $this->views;
+    }
+
+    /**
+     * @param int $views
+     */
+    public function set_views(int $views)
+    {
+        $this->views = $views;
+        return $this->_save('views', $views);
+    }
+
+    /**
      * @return News_comments_model[]
      */
     public function get_comments()
@@ -156,7 +182,12 @@ class News_model extends MY_Model
         if (!$this->comments) {
             $CI = &get_instance();
             $CI->load->model('news_comments_model');
-            $this->comments = News_comments_model::get_by_news_id($this->id);
+            $comments = News_comments_model::get_by_news_id($this->id);
+            $this->comments = [];
+
+            foreach ($comments as $c) {
+                $this->comments[] = (new News_comments_model)->load_data($c);
+            }
         }
 
         return $this->comments;
@@ -175,6 +206,32 @@ class News_model extends MY_Model
         $_data = $CI->s->from(self::NEWS_TABLE)->many();
 
         $news_list = [];
+        foreach ($_data as $_item) {
+            $news_list[] = (new self())->load_data($_item);
+        }
+
+        if ($preparation === FALSE) {
+            return $news_list;
+        }
+
+        return self::preparation($news_list, $preparation);
+    }
+
+        /**
+     * @param int $page
+     * @param bool|string $preparation
+     * @return array
+     */
+    public static function get_last($preparation = FALSE)
+    {
+        $CI =& get_instance();
+        $_data = $CI->s->from(self::NEWS_TABLE)
+            ->orderBy('time_updated', 'DESC')
+            ->limit(static::PAGE_LIMIT, 0)
+            ->many();
+
+        $news_list = [];
+
         foreach ($_data as $_item) {
             $news_list[] = (new self())->load_data($_item);
         }

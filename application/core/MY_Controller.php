@@ -67,4 +67,11 @@ class MY_Controller extends CI_Controller
     {
 
     }
+
+    public function render(string $view, array $data = [])
+    {
+        $this->load->view('base/header');
+        $this->load->view($view, $data);
+        $this->load->view('base/footer');
+    }
 }

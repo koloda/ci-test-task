@@ -1,6 +1,6 @@
 <?php
 
-include('Likes_model.php');
+require_once('Likes_model.php');
 
 class News_comments_likes_model extends Likes_model
 {
