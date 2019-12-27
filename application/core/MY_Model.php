@@ -48,16 +48,15 @@ class MY_Model {
             if ( ! empty($this->data))
             {
                 $this->_map_sql_to_class();
-            } else
-            {
+            } else {
                 throw new Exception('No data with this id!:'. $id);
             }
-        } else
-        {
-            if($id !== FALSE){
+        } else {
+            if($id !== FALSE) {
                 throw new Exception('Id error!');
             }
         }
+
         return $this;
     }
     public function get_id()

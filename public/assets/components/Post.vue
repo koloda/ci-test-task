@@ -2,21 +2,29 @@
 import Vue from 'vue'
 import LikeButton from './LikeButton.vue';
 import PostComments from './PostComments.vue';
+import CommentForm from './CommentForm.vue';
 
 export default Vue.extend({
     data () {
         return {
-            likesCount: this.likes
+            likesCount: this.likes,
+            commentsList: this.commentsjson,
+            commentsCount: this.comments
         }
     },
     props: ['header', 'published', 'post_id', 'liked', 'views', 'likes', 'comments', 'image', 'commentsjson'],
     components: {
         'like-button': LikeButton,
-        'post-comments': PostComments
+        'post-comments': PostComments,
+        'comment-form': CommentForm,
     },
     methods: {
         likesChanged: function (n) {
             this.likesCount = n;
+        },
+        commentAdded: function (comments) {
+            this.commentsList = comments;
+            this.commentsCount = this.commentsList.length;
         }
     }
 })
@@ -58,11 +66,16 @@ export default Vue.extend({
             </div>
 
             <div class="col-md">
-                Comments: {{ comments }}
+                Comments: {{ commentsCount }}
             </div>
         </div>
 
+        <br>
         <hr>
-    <post-comments :comments="commentsjson"></post-comments>
+
+        <comment-form @commentadded="commentAdded" :entity_id="post_id"></comment-form>
+
+        <hr>
+        <post-comments @commentremoved="commentAdded" :comments="commentsList"></post-comments>
     </div>
 </template>

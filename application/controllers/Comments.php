@@ -26,18 +26,45 @@ class Comments extends MY_Controller
         return $this->response_success(['likes' => $model->get_likes()]);
     }
 
-    public function add(int $news_id, string $text)
+    public function add(int $news_id, string $text = null)
     {
-        $this->load->model('news_comments_model');
-        $model = News_comments_model::create(compact('news_id', 'user_id'));
+        if (!$text) { $text = $this->input->post('text'); }
+        $user_id = $this->get_user_id();
 
-        if ($model) {
-            return $this->response_success(['comment' => $model]);
-        } else {
-            return $this->response_error('error adding comment', [], 400);
-        }
+        $this->load->model('news_comments_model');
+        News_comments_model::create(compact('news_id', 'user_id', 'text'));
+        $comments = News_comments_model::get_by_news_id($news_id, true);
+
+        return $this->response_success(['comments' => News_comments_model::as_json($comments, $user_id)]);
     }
 
+    public function remove(int $comment_id)
+    {
+        $comment = $this->get_comment($comment_id);
+        $user_id = $this->get_user_id();
+
+        if (!$comment || $comment->get_user_id() != $user_id) {
+            return $this->response_error(400, 'Action not allowed');
+        }
+
+        $news_id = $comment->get_news_id();
+        $this->load->model('news_comments_model');
+        $db = &get_instance()->s;
+        $db->from(News_comments_model::COMMENTS_TABLE)
+            ->where(['id' => $comment_id])
+            ->delete()
+            ->execute();
+
+        $comments = News_comments_model::get_by_news_id($news_id, true);
+
+        return $this->response_success(['comments' => News_comments_model::as_json($comments, $user_id)]);
+    }
+
+    /**
+     * @param integer $comment_id
+     *
+     * @return News_comments_model|null
+     */
     protected function get_comment(int $comment_id)
     {
         $this->load->model('news_comments_model');

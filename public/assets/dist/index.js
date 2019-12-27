@@ -115411,11 +115411,14 @@ var vue_1 = __importDefault(require("vue"));
 
 var LikeButton_vue_1 = __importDefault(require("./LikeButton.vue"));
 
+var request_1 = __importDefault(require("request"));
+
 exports.default = vue_1.default.extend({
   props: ['comment'],
   data: function data() {
     return {
-      likesCount: this.comment.likes
+      likesCount: this.comment.likes,
+      imgUrl: 'https://i.pravatar.cc/80?img=' + this.comment.id.toString()[0]
     };
   },
   components: {
@@ -115424,6 +115427,22 @@ exports.default = vue_1.default.extend({
   methods: {
     likesChanged: function likesChanged(n) {
       this.likesCount = n;
+    },
+    remove: function remove() {
+      var url = window.location.origin + '/comments/remove/' + this.comment.id;
+      var component = this;
+      request_1.default.post({
+        url: url
+      }, function (e, r, body) {
+        if (r && r.statusCode == 200) {
+          var data = JSON.parse(body);
+
+          if (data.status == 'success') {
+            component.$emit('commentremoved', data.comments);
+            component.text = '';
+          }
+        }
+      });
     }
   }
 });
@@ -115447,10 +115466,15 @@ exports.default = vue_1.default.extend({
         attrs: { "uk-grid": "" }
       },
       [
-        _vm._m(0),
+        _c("div", { staticClass: "uk-width-auto uk-first-column" }, [
+          _c("img", {
+            staticClass: "uk-comment-avatar",
+            attrs: { src: _vm.imgUrl, width: "80", height: "80", alt: "" }
+          })
+        ]),
         _vm._v(" "),
         _c("div", { staticClass: "uk-width-expand" }, [
-          _vm._m(1),
+          _vm._m(0),
           _vm._v(" "),
           _c(
             "ul",
@@ -115484,7 +115508,15 @@ exports.default = vue_1.default.extend({
                   ],
                   1
                 )
-              ])
+              ]),
+              _vm._v(" "),
+              _vm.comment.createdByCurrUser
+                ? _c("li", [
+                    _c("a", { on: { click: _vm.remove } }, [
+                      _vm._v("Remove comment")
+                    ])
+                  ])
+                : _vm._e()
             ]
           )
         ])
@@ -115497,22 +115529,6 @@ exports.default = vue_1.default.extend({
   ])
 }
 var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "uk-width-auto uk-first-column" }, [
-      _c("img", {
-        staticClass: "uk-comment-avatar",
-        attrs: {
-          src: "https://i.pravatar.cc/80?img=8",
-          width: "80",
-          height: "80",
-          alt: ""
-        }
-      })
-    ])
-  },
   function() {
     var _vm = this
     var _h = _vm.$createElement
@@ -115552,7 +115568,7 @@ render._withStripped = true
         
       }
     })();
-},{"vue":"../../node_modules/vue/dist/vue.runtime.esm.js","./LikeButton.vue":"components/LikeButton.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js"}],"components/PostComments.vue":[function(require,module,exports) {
+},{"vue":"../../node_modules/vue/dist/vue.runtime.esm.js","./LikeButton.vue":"components/LikeButton.vue","request":"../../node_modules/request/index.js","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js"}],"components/PostComments.vue":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -115574,13 +115590,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 var _default = {
   props: ['comments'],
-  data: function data() {
-    return {
-      commentsList: this.comments
-    };
-  },
   components: {
     comment: _Comment.default
+  },
+  methods: {
+    commentRemoved: function commentRemoved(comments) {
+      this.$emit('commentremoved', comments);
+    }
   }
 };
 exports.default = _default;
@@ -115599,11 +115615,20 @@ exports.default = _default;
   return _c(
     "div",
     { staticClass: "comments-list" },
-    _vm._l(_vm.commentsList, function(c) {
+    _vm._l(_vm.comments, function(c) {
       return _c(
         "div",
         { key: c.id, staticClass: "comment" },
-        [_c("comment", { attrs: { comment: c } }, [_vm._v(_vm._s(c.text))])],
+        [
+          _c(
+            "comment",
+            {
+              attrs: { comment: c },
+              on: { commentremoved: _vm.commentRemoved }
+            },
+            [_vm._v(_vm._s(c.text))]
+          )
+        ],
         1
       )
     }),
@@ -115639,7 +115664,139 @@ render._withStripped = true
         
       }
     })();
-},{"./Comment.vue":"components/Comment.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js","vue":"../../node_modules/vue/dist/vue.runtime.esm.js"}],"components/Post.vue":[function(require,module,exports) {
+},{"./Comment.vue":"components/Comment.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js","vue":"../../node_modules/vue/dist/vue.runtime.esm.js"}],"components/CommentForm.vue":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _request = _interopRequireDefault(require("request"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+var _default = {
+  props: ['entity_id'],
+  data: function data() {
+    return {
+      text: ''
+    };
+  },
+  methods: {
+    sendComment: function sendComment() {
+      if (this.text.length > 0) {
+        var url = window.location.origin + '/comments/add/' + this.entity_id;
+        var form = {
+          text: this.text,
+          news_id: this.entity_id
+        };
+        var component = this;
+
+        _request.default.post({
+          url: url,
+          form: form
+        }, function (e, r, body) {
+          if (r && r.statusCode == 200) {
+            var data = JSON.parse(body);
+
+            if (data.status == 'success') {
+              component.$emit('commentadded', data.comments);
+              component.text = '';
+            }
+          }
+        });
+      }
+    }
+  }
+};
+exports.default = _default;
+        var $31753f = exports.default || module.exports;
+      
+      if (typeof $31753f === 'function') {
+        $31753f = $31753f.options;
+      }
+    
+        /* template */
+        Object.assign($31753f, (function () {
+          var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "comment-form" }, [
+    _c("div", { staticClass: "row" }, [
+      _c("textarea", {
+        directives: [
+          {
+            name: "model",
+            rawName: "v-model",
+            value: _vm.text,
+            expression: "text"
+          }
+        ],
+        staticClass: "col-md-10",
+        attrs: { placeholder: "Add your mention about this post" },
+        domProps: { value: _vm.text },
+        on: {
+          input: function($event) {
+            if ($event.target.composing) {
+              return
+            }
+            _vm.text = $event.target.value
+          }
+        }
+      }),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "col-md-2 uk-button uk-button-secondary",
+          on: { click: _vm.sendComment }
+        },
+        [_vm._v("Add comment")]
+      )
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+          return {
+            render: render,
+            staticRenderFns: staticRenderFns,
+            _compiled: true,
+            _scopeId: null,
+            functional: undefined
+          };
+        })());
+      
+    /* hot reload */
+    (function () {
+      if (module.hot) {
+        var api = require('vue-hot-reload-api');
+        api.install(require('vue'));
+        if (api.compatible) {
+          module.hot.accept();
+          if (!module.hot.data) {
+            api.createRecord('$31753f', $31753f);
+          } else {
+            api.reload('$31753f', $31753f);
+          }
+        }
+
+        
+      }
+    })();
+},{"request":"../../node_modules/request/index.js","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js","vue":"../../node_modules/vue/dist/vue.runtime.esm.js"}],"components/Post.vue":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -115658,20 +115815,29 @@ var LikeButton_vue_1 = __importDefault(require("./LikeButton.vue"));
 
 var PostComments_vue_1 = __importDefault(require("./PostComments.vue"));
 
+var CommentForm_vue_1 = __importDefault(require("./CommentForm.vue"));
+
 exports.default = vue_1.default.extend({
   data: function data() {
     return {
-      likesCount: this.likes
+      likesCount: this.likes,
+      commentsList: this.commentsjson,
+      commentsCount: this.comments
     };
   },
   props: ['header', 'published', 'post_id', 'liked', 'views', 'likes', 'comments', 'image', 'commentsjson'],
   components: {
     'like-button': LikeButton_vue_1.default,
-    'post-comments': PostComments_vue_1.default
+    'post-comments': PostComments_vue_1.default,
+    'comment-form': CommentForm_vue_1.default
   },
   methods: {
     likesChanged: function likesChanged(n) {
       this.likesCount = n;
+    },
+    commentAdded: function commentAdded(comments) {
+      this.commentsList = comments;
+      this.commentsCount = this.commentsList.length;
     }
   }
 });
@@ -115744,14 +115910,28 @@ exports.default = vue_1.default.extend({
         _vm._v(" "),
         _c("div", { staticClass: "col-md" }, [
           _vm._v(
-            "\n            Comments: " + _vm._s(_vm.comments) + "\n        "
+            "\n            Comments: " +
+              _vm._s(_vm.commentsCount) +
+              "\n        "
           )
         ])
       ]),
       _vm._v(" "),
+      _c("br"),
+      _vm._v(" "),
       _c("hr"),
       _vm._v(" "),
-      _c("post-comments", { attrs: { comments: _vm.commentsjson } })
+      _c("comment-form", {
+        attrs: { entity_id: _vm.post_id },
+        on: { commentadded: _vm.commentAdded }
+      }),
+      _vm._v(" "),
+      _c("hr"),
+      _vm._v(" "),
+      _c("post-comments", {
+        attrs: { comments: _vm.commentsList },
+        on: { commentremoved: _vm.commentAdded }
+      })
     ],
     1
   )
@@ -115785,7 +115965,7 @@ render._withStripped = true
         
       }
     })();
-},{"vue":"../../node_modules/vue/dist/vue.runtime.esm.js","./LikeButton.vue":"components/LikeButton.vue","./PostComments.vue":"components/PostComments.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js"}],"index.js":[function(require,module,exports) {
+},{"vue":"../../node_modules/vue/dist/vue.runtime.esm.js","./LikeButton.vue":"components/LikeButton.vue","./PostComments.vue":"components/PostComments.vue","./CommentForm.vue":"components/CommentForm.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 require("uikit");
@@ -115798,11 +115978,7 @@ require("./less/style.less");
 
 var _vueEsm = _interopRequireDefault(require("vue/dist/vue.esm.js"));
 
-var _LikeButton = _interopRequireDefault(require("./components/LikeButton"));
-
 var _Post = _interopRequireDefault(require("./components/Post"));
-
-var _PostComments = _interopRequireDefault(require("./components/PostComments"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -115812,12 +115988,10 @@ new _vueEsm.default({
     'test': 'testtext'
   },
   components: {
-    'like-button': _LikeButton.default,
-    'post': _Post.default,
-    'post-comments': _PostComments.default
+    'post': _Post.default
   }
 });
-},{"uikit":"../../node_modules/uikit/dist/js/uikit.js","../../node_modules/uikit/dist/js/uikit-icons":"../../node_modules/uikit/dist/js/uikit-icons.js","./index.css":"index.css","./less/style.less":"less/style.less","vue/dist/vue.esm.js":"../../node_modules/vue/dist/vue.esm.js","./components/LikeButton":"components/LikeButton.vue","./components/Post":"components/Post.vue","./components/PostComments":"components/PostComments.vue"}],"../../../../../../usr/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"uikit":"../../node_modules/uikit/dist/js/uikit.js","../../node_modules/uikit/dist/js/uikit-icons":"../../node_modules/uikit/dist/js/uikit-icons.js","./index.css":"index.css","./less/style.less":"less/style.less","vue/dist/vue.esm.js":"../../node_modules/vue/dist/vue.esm.js","./components/Post":"components/Post.vue"}],"../../../../../../usr/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;

@@ -226,7 +226,7 @@ class News_model extends MY_Model
     {
         $CI =& get_instance();
         $_data = $CI->s->from(self::NEWS_TABLE)
-            ->orderBy('time_updated', 'DESC')
+            ->orderBy('time_created', 'DESC')
             ->limit(static::PAGE_LIMIT, 0)
             ->many();
 
@@ -284,5 +284,21 @@ class News_model extends MY_Model
         }
 
 	    return new self($CI->s->insert_id);
+    }
+
+    public static function get_popular()
+    {
+        $db = &get_instance()->s;
+        $news = $db->from(static::NEWS_TABLE)
+            ->orderBy('views', 'DESC')
+            ->limit(static::PAGE_LIMIT, 0)
+            ->many();
+
+        $news_list = [];
+        foreach ($news as $item) {
+            $news_list[] = (new self())->load_data($item);
+        }
+
+        return $news_list;
     }
 }

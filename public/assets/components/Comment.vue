@@ -2,7 +2,7 @@
     <article class="uk-comment">
         <header uk-grid="" class="uk-comment-header uk-grid-medium uk-flex-middle uk-grid">
             <div class="uk-width-auto uk-first-column">
-                <img src="https://i.pravatar.cc/80?img=8" width="80" height="80" alt="" class="uk-comment-avatar">
+                <img :src="imgUrl" width="80" height="80" alt="" class="uk-comment-avatar">
             </div>
             <div class="uk-width-expand">
                 <h4 class="uk-comment-title uk-margin-remove">
@@ -25,6 +25,9 @@
                             ></like-button>
                         </div>
                     </li>
+                    <li v-if="comment.createdByCurrUser">
+                        <a @click="remove">Remove comment</a>
+                    </li>
                 </ul>
             </div>
         </header>
@@ -39,12 +42,14 @@
 <script lang="ts">
     import Vue from 'vue';
     import LikeButton from './LikeButton.vue';
+    import request from 'request';
 
     export default Vue.extend({
         props: ['comment'],
         data () {
             return {
-                likesCount: this.comment.likes
+                likesCount: this.comment.likes,
+                imgUrl: 'https://i.pravatar.cc/80?img=' + this.comment.id.toString()[0]
             }
         },
         components: {
@@ -53,6 +58,21 @@
         methods: {
             likesChanged: function (n) {
                 this.likesCount = n;
+            },
+            remove: function () {
+                const url =  window.location.origin + '/comments/remove/' + this.comment.id;
+                let component = this;
+
+                request.post({url}, function (e, r, body) {
+                    if (r && r.statusCode == 200) {
+                        const data = JSON.parse(body);
+
+                        if (data.status == 'success') {
+                            component.$emit('commentremoved', data.comments);
+                            component.text = '';
+                        }
+                    }
+                })
             }
         }
     })

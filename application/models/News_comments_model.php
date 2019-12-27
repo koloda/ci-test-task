@@ -20,11 +20,14 @@ class News_comments_model extends MY_Model
     /** @var int */
     protected $news_id;
 
-    protected $likes_class = 'News_comments_likes_model';
+    /** @var string */
+    protected $user_id;
+
+    private $likes_class = 'News_comments_likes_model';
 
     function __construct($id = FALSE)
     {
-        parent::__construct();
+        parent::__construct($id);
         $this->class_table = self::COMMENTS_TABLE;
         $this->set_id($id);
     }
@@ -38,12 +41,17 @@ class News_comments_model extends MY_Model
 	        return false;
         }
 
-	    return new self($db->insert_id);
+        return new self($db->insert_id);
     }
 
     public function get_created_at()
     {
         return $this->created_at;
+    }
+
+    public function get_user_id()
+    {
+        return $this->user_id;
     }
 
     public function get_news_id()
@@ -63,12 +71,23 @@ class News_comments_model extends MY_Model
         return $this->_save('text', $text);
     }
 
-    public static function get_by_news_id(int $news_id)
+    public static function get_by_news_id(int $news_id, bool $asObjects = false)
     {
         $db = &get_instance()->s;
         $news = $db->from(static::COMMENTS_TABLE)
             ->where(['news_id' => $news_id])
+            ->orderBy('created_at', 'DESC')
             ->many();
+
+        if ($asObjects) {
+            $objects = [];
+
+            foreach ($news as $n) {
+                $objects[] = new self($n);
+            }
+
+            return $objects;
+        }
 
         return $news;
     }
@@ -89,6 +108,7 @@ class News_comments_model extends MY_Model
                 'created_at'    => date('m D, Y', strtotime($item->get_created_at())),
                 'likes'         => $item->get_likes(),
                 'likedByCurrUser'   => $user_id ? $item->liked_by($user_id) : false,
+                'createdByCurrUser' => $user_id == $item->get_user_id(),
             ];
         }
 
